@@ -1,0 +1,44 @@
+{
+  "size":{
+	"width":600,
+	"height":800,
+	"max_width_proportion":0.6,
+	"max_height_proportion":0.9
+  },
+  "attachments": {
+    "theme": "thumb",
+    "maxImgSize": 3048576,
+	"hide":{
+		"sectionTitle" : true,
+		"noAttachments" : true
+	}
+  },
+  "icons": [
+    "avi",
+    "bmp",
+    "doc",
+    "docx",
+    "dwg",
+    "dxf",
+    "gif",
+    "jpeg",
+    "jpg",
+    "mp3",
+    "mp4",
+    "mpg",
+    "ods",
+    "odt",
+    "otp",
+    "pdf",
+    "png",
+    "ppt",
+    "pptx",
+    "rar",
+    "tif",
+    "tiff",
+    "txt",
+    "xls",
+    "xlsx",
+    "zip"
+  ]
+}

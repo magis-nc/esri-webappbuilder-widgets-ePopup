@@ -1,0 +1,88 @@
+.jimu-widget-epopup .viewer{
+    position:absolute;
+    width:80%;
+    margin-left:10%;
+    height:80%;
+    margin-top:10%;
+}
+
+.widget-epopup-default{}
+.widget-epopup-default img{
+    max-width:50px;
+    max-height:50px;
+    float:left;
+}
+
+.widget-epopup-icon{}
+.widget-epopup-icon li{
+    width: 100%;
+	vertical-align: middle;
+	border-bottom: 1px solid rgba(211, 211, 211, 0.3);
+	display: inline-block;
+	margin-top: 3px;
+	padding-bottom: 3px;
+}
+.widget-epopup-icon li a{
+    vertical-align: middle;
+}
+.widget-epopup-icon img{
+    max-width:50px;
+    max-height:50px;
+    float:left;
+	margin-right: 5px;
+}
+
+.widget-epopup-thumb{}
+.widget-epopup-thumb li{
+    float:left;
+    width:70px;
+    height:70px;
+	margin-right: 7px;
+}
+.widget-epopup-thumb img{
+	max-width:70px;
+	max-height:70px;
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+	border: 1px solid lightgrey;
+	border-radius: 5px;
+}
+.widget-epopup-thumb img:hover{
+	border: 1px solid grey;
+	border-radius: 3px;
+}
+
+.widget-epopup-large{}
+.widget-epopup-large li{
+    float:left;
+    width:100%;
+    height:100%;
+	margin-bottom:7px;
+	margin-right:3px;
+	margin-left:3px;
+}
+.esriMobilePopupInfoView .widget-epopup-large li, .esriPopupMaximized .widget-epopup-large li{
+	max-height: 300px !important;
+	max-width: 450px !important;
+}
+.widget-epopup-large img{
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	max-height:200px;
+	max-width:98%;
+	border: 1px solid #D3D3D3;
+	border-radius: 5px;
+	
+}
+.esriMobilePopupInfoView .widget-epopup-large img, .esriPopupMaximized .widget-epopup-large img{
+	max-height: 300px !important;
+	max-width: 450px !important;	
+}
+.widget-epopup-large img:hover{
+	border: 1px solid grey;
+	border-radius: 3px;	
+}
+
+.esriMobileInfoViewItem .popup-menu-button {clear: left !important;}

@@ -1,0 +1,22 @@
+{
+  "name": "ePopup",
+  "2D": true,
+  "3D": true,
+  "platform": "HTML",
+  "version": "2.1.1",
+  "wabVersion": "2.1",
+  "author": "MAGIS NC www.magis.nc",
+  "description": "Widget to customize popup behaviour",
+  "copyright": "© MAGIS NC",
+  "properties": {
+    "inPanel": false,
+    "hasConfig": true,
+	"hasStyle":true,
+	"hasUIFile":false,
+	"hasSettingPage":false,
+	"hasSettingUIFile":false,
+	"hasSettingLocale":false,
+	"hasSettingStyle":false,
+    "hasLocale":false
+  }
+}
