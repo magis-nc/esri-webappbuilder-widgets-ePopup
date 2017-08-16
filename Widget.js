@@ -23,7 +23,10 @@ define([
     'dojo/on',
     'dojo/_base/lang',
     'dojo/aspect',
-	'dojo/query'
+	'dojo/query',
+	'esri/urlUtils',
+	'dojo/has',
+	'dojo/_base/sniff'
   ],
     function (
         declare,
@@ -31,7 +34,9 @@ define([
         on,
         lang,
         aspect,
-		query
+		query,
+		urlUtils,
+		has
     ) {
         var clazz = declare([BaseWidget], {
             name: 'ePopup',
@@ -45,14 +50,13 @@ define([
                 this.onAttachementsResult = lang.hitch(this, this.onAttachementsResult);
 
                 this.map.infoWindow.on("set-features", lang.hitch(this, this.onSetFeatures));
-                this.map.infoWindow.on("show", lang.hitch(this, this.setSizeAndPlacement));
-				
+
                 this.layers = {};
 
                 this.theme = (this.config.attachments && this.config.attachments.theme) ? this.config.attachments.theme : "default";
                 this.maxImgSize = (this.config.attachments && this.config.attachments.maxImgSize) ? this.config.attachments.maxImgSize : 1024*1024 ;
             },
-            
+
 			_getPopupRenderers:function(){
 				var popups = dojo.query(".esriViewPopup");
 				var renderers = [];
@@ -61,37 +65,37 @@ define([
 					var id = popup.id || popup.widgetid;
 					var popupRenderer = dijit.byId(id);
 					if(!popupRenderer){
-						continue;					
+						continue;
 					}
 					renderers.push(popupRenderer);
 					if(!this._nls){
 						this._nls = popupRenderer._nls;
 						console.log("popupRenderer NLS", this._nls);
-					}	
+					}
 				}
 
 				return renderers;
-				
+
 			},
-			
+
             onAttachementsResult:function(attachments){
 				//get attachments zones (can be multiple because of mobile/non-mobile view)
 				var popupRenderers = this._getPopupRenderers();
 				if(!popupRenderers)
 					return;
-				
+
 				//Prepare attachments content
                 if(attachments.length > 0){
                     var html = '';
                     for(var i=0,nb=attachments.length;i<nb;i++){
                         html += this._getLi(attachments[i]);
                     }
-					
+
                 }
                 else{
                     html = '<li>'+ this._nls.NLS_noAttach +'</li>';
                 }
-				
+
 				//Setup attachments content
 				for(var i=0,nb=popupRenderers.length;i<nb;i++){
 					var attach_ul = popupRenderers[i]._attachmentsList;
@@ -124,44 +128,72 @@ define([
             _getIcon:function(attachment, noImage){
 				var ext = attachment.name.split(".").slice(-1)[0].toLowerCase();
 				var contentType = attachment.contentType.split("/");
-				
+
                 if(!noImage && contentType[0] == "image" && attachment.size <= this.maxImgSize){
-                    return '<img src="'+attachment.url+'" />';
+                    return '<img class="thumbnail" src="'+attachment.url+'" />';
                 }
-                
+
                 if(this.config.icons && this.config.icons.indexOf(ext) > -1){
 					return '<img src="'+this.folderUrl +'/images/extensions/'+ext+'.png" />';
 				}
-                    
-                return '<img src="'+this.folderUrl +'/images/apps/_blank.png" />';
+
+                return '<img src="'+this.folderUrl +'/images/extensions/_blank.png" />';
+            },
+
+            _getLinkAttributes:function(attachment){
+                var title = attachment.name + ' ('+this._getHumanSize(attachment.size)+')';
+                var proxyRule = urlUtils.getProxyRule(attachment.url);
+                if(proxyRule && proxyRule.proxyUrl)
+					attachment.url = proxyRule.proxyUrl + "?" + attachment.url;
+
+			    var download_name = attachment.name.replace('"', " ");
+
+                var attrs = ' title="'+title.replace('"', ' ')+'"'
+                    + ' type="'+attachment.contentType+'"'
+                    + ' target="_blank"'
+                    + ' href="'+attachment.url+'"';
+
+                if(!has("ff"))
+                    attrs += ' download="'+download_name+'"';
+
+                return attrs;
             },
 
             _getLi:function(attachment){
                 var title = attachment.name + ' ('+this._getHumanSize(attachment.size)+')';
+				var link_attributes = this._getLinkAttributes(attachment);
+
                 switch(this.theme){
                     case "icon":
                         var img = this._getIcon(attachment);
                         return '<li title="'+title+'">'
-                            + '<a title="'+title+'" target="_blank" href="'+attachment.url+'">'
-                            + img + title
+                            + '<a '+link_attributes+'>'
+                            + img + '<span>' + title + '</span>'
                             +'</a></li>';
 
                     case "thumb":
                         var img = this._getIcon(attachment);
                         return '<li title="'+title+'">'
-                            + '<a title="'+title+'" target="_blank" href="'+attachment.url+'">'
+                            + '<a '+link_attributes+'>'
                             + img
                             +'</a></li>';
-							
+
+                    case "medium":
+                        var img = this._getIcon(attachment);
+                        return '<li title="'+title+'">'
+                            + '<a '+link_attributes+'>'
+                            + img
+                            +'</a></li>';
+
 					case "large":
                         var img = this._getIcon(attachment);
                         return '<li title="'+title+'">'
-                            + '<a title="'+title+'" target="_blank" href="'+attachment.url+'">'
+                            + '<a '+link_attributes+'>'
                             + img
                             +'</a></li>';
 
                     default:
-                        return '<li title="'+title+'"><a title="'+title+'" target="_blank" href="'+attachment.url+'">'+title+'</a></li>';
+                        return '<li title="'+title+'"><a '+link_attributes+'>'+title+'</a></li>';
                 }
             },
 
@@ -173,11 +205,11 @@ define([
 					attach_ul.parentNode.style.display = 'block';
 					attach_ul.innerHTML = this._nls.NLS_searching;
 				}
-				
+
                 defered.then(this.onAttachementsResult);
             },
-            
-            onSetFeatures: function (evt) {               
+
+            onSetFeatures: function (evt) {
                 //Get layers and track infoTemplate getAttachments
                 for(var i=0, nb=evt.target.features.length;i<nb;i++){
                     var layer = evt.target.features[i].getLayer();
@@ -189,54 +221,67 @@ define([
                     }
                 }
             },
-			
+
 			setSizeAndPlacement:function(){
-				if(this.config.size){
-					var width = this.config.size.width;
-					var height = this.config.size.height;
-					
-					//Control if proportions are respected
-					if(width > (this.map.width * this.config.size.max_with_proportion))
-						width = this.map.width * this.config.size.max_with_proportion;
-					if(height > (this.map.height * this.config.size.max_height_proportion))
-						height = this.map.height * this.config.size.max_height_proportion;
-					
-					//Get popup map's anchor and distances to possibles anchor positions (top, right, bottom-left...)
-					/*var popup_anchor = this.map.toScreen(this.map.infoWindow.location);
-					var anchor_distances = {
-						"top":popup_anchor.y,
-						"bottom":this.map.height - popup_anchor.y,
-						"left":popup_anchor.x,
-						"right":this.map.width - popup_anchor.x
-					};
-					var corners = ["top-left", "top-right", "bottom-left", "bottom-right"];
-					for(var i=0,nb=corners.length;i<nb;i++){
-						var corner = corners[i];
-						var tab_corner = corner.split("-");
-						anchor_distances[corner] = Math.sqrt(
-							Math.pow(anchor_distances[tab_corner[0]],2) 
-							+ Math.pow(anchor_distances[tab_corner[1]],2)
-						)
-					}
-					console.log("anchor_distances", anchor_distances);
-					
-					//Determine best anchor position
-					var max_distance = 0;
-					var best_anchor = "left";
-					for(var possible_anchor in anchor_distances){
-						if(anchor_distances[possible_anchor] > max_distance){
-							best_anchor = possible_anchor;
-							max_distance = anchor_distances[possible_anchor];
-						}
-					}
-					console.log("best !", best_anchor);
-					
-					//Define best anchor !
-					this.map.infoWindow.set("anchor", best_anchor);*/
-					
-					//resize
-					this.map.infoWindow.resize(width, height);
-				}				
+			    if(!this.config.size)
+			        return;
+
+                var width = this.config.size.width;
+                var height = this.config.size.height;
+
+                //Control if proportions are respected
+                if(width > (this.map.width * this.config.size.max_with_proportion))
+                    width = this.map.width * this.config.size.max_with_proportion;
+                if(height > (this.map.height * this.config.size.max_height_proportion))
+                    height = this.map.height * this.config.size.max_height_proportion;
+
+                //Get spaces for popup
+                var popup_anchor = this.map.toScreen(this.map.infoWindow.location);
+                var anchor_distances = {
+                    "top":popup_anchor.y,
+                    "bottom":this.map.height - popup_anchor.y,
+                    "left":popup_anchor.x,
+                    "right":this.map.width - popup_anchor.x
+                };
+
+                //Ajust with deltas optionnaly configured
+                if(this.config.placement_deltas){
+                    for(var anchor in anchor_distances){
+                        if(this.config.placement_deltas[anchor])
+                            anchor_distances[anchor] -= this.config.placement_deltas[anchor];
+                    }
+                 }
+
+                //Determine best placement (top/bottom/left/right)
+                var best_anchor = null;
+                var max = 0;
+                for(var anchor in anchor_distances){
+                    if(anchor_distances[anchor]>max){
+                        max = anchor_distances[anchor];
+                        best_anchor = anchor;
+                    }
+                }
+
+                //Ajust the placement if needed
+                if(best_anchor == "top" || best_anchor == "bottom"){
+                    if(anchor_distances["left"] < (heigth / 2)){
+                        best_anchor += "-right";
+                    }
+                    else if(anchor_distances["right"] < (heigth / 2)){
+                        best_anchor += "-left";
+                    }
+                }
+                else{
+                     if(anchor_distances["top"] < (heigth / 2)){
+                        best_anchor = "bottom-" + best_anchor;
+                    }
+                    else if(anchor_distances["bottom"] < (heigth / 2)){
+                        best_anchor = "top-" + best_anchor;
+                    }
+                }
+
+                this.map.infoWindow.resize(width, height);
+                this.map.infoWindow.set("anchor", best_anchor);
 			}
         });
 

@@ -1,17 +1,22 @@
 {
-  "size":{
-	"width":600,
-	"height":800,
-	"max_width_proportion":0.6,
-	"max_height_proportion":0.9
+  "size": {
+    "width": 500,
+    "height": 500,
+    "max_width_proportion": 0.6,
+    "max_height_proportion": 0.9
+  },
+  "placement_deltas":{
+    "right":350,
+    "left":50,
+    "bottom":50
   },
   "attachments": {
-    "theme": "thumb",
+    "theme": "icon",
     "maxImgSize": 3048576,
-	"hide":{
-		"sectionTitle" : true,
-		"noAttachments" : true
-	}
+    "hide": {
+      "sectionTitle": false,
+      "noAttachments": false
+    }
   },
   "icons": [
     "avi",
